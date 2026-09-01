@@ -3359,29 +3359,79 @@
         const supabaseUrl = 'https://supabase.com/dashboard/project/cnppivqvrwibbnwazogo/';
 const supabaseKey = 'sb_publishable_fzYTANfnVxLvXbYFR5ZbqQ_QJha0k5W';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// ===== FUNGSI MENARIK DATA KAS DARI SUPABASE =====
+async function muatDataKas() {
+    const { data: akunKas, error } = await supabaseClient
+        .from('akun_kas')
+        .select('*')
+        .order('id', { ascending: true });
+
+    if (error) {
+        console.error('Gagal memuat data kas:', error);
+        return;
+    }
+
+    let totalKas = 0;
+    let htmlDetail = '';
+
+    // Menggabungkan semua saldo dan merakit ulang tampilan rincian kas
+    akunKas.forEach(akun => {
+        totalKas += akun.saldo_awal;
+        
+        // Memilih ikon yang pas berdasarkan nama kas
+        let icon = 'ph-wallet';
+        if(akun.nama.includes('Infaq')) icon = 'ph-coins';
+        else if(akun.nama.includes('Donasi')) icon = 'ph-hand-coins';
+        else if(akun.nama.includes('Zakat')) icon = 'ph-bank';
+        else if(akun.nama.includes('Lainnya')) icon = 'ph-dots-three-circle';
+
+        htmlDetail += `
+        <div class="ledger-row" style="cursor:pointer;" onclick="bukaBukuBesarAkun('${akun.nama}')">
+            <span class="left-part"><i class="ph ${icon}"></i> ${akun.nama}</span>
+            <span class="amt">Rp ${akun.saldo_awal.toLocaleString('id-ID')}</span>
+        </div>`;
+    });
+
+    // Mengganti teks 'Rp -' menjadi angka asli dari database
+    const elTotalKas = document.querySelectorAll('.cash-amount');
+    if(elTotalKas.length > 1) {
+        elTotalKas[0].innerText = 'Rp ' + totalKas.toLocaleString('id-ID'); // Layar tamu
+        elTotalKas[1].innerText = 'Rp ' + totalKas.toLocaleString('id-ID'); // Layar admin
+    }
+
+    const elDetailKas = document.getElementById('detailKas');
+    if(elDetailKas) {
+        elDetailKas.innerHTML = htmlDetail;
+    }
+}
+
         // ===== Transisi Login -> Dashboard =====
         function masukDashboard() {
-            var login = document.getElementById('login-screen');
-            var trans = document.getElementById('transition-screen');
-            var dash = document.getElementById('dashboard-screen');
+    var login = document.getElementById('login-screen');
+    var trans = document.getElementById('transition-screen');
+    var dash = document.getElementById('dashboard-screen');
 
-            login.classList.add('screen-out');
+    login.classList.add('screen-out');
 
-            setTimeout(function () {
-                login.style.display = 'none';
-                trans.style.display = 'flex';
-                requestAnimationFrame(function () { trans.classList.add('show'); });
-            }, 300);
+    setTimeout(function () {
+        login.style.display = 'none';
+        trans.style.display = 'flex';
+        requestAnimationFrame(function () { trans.classList.add('show'); });
+    }, 300);
 
-            setTimeout(function () {
-                trans.classList.remove('show');
-                setTimeout(function () {
-                    trans.style.display = 'none';
-                    dash.style.display = 'flex';
-                    dash.classList.add('screen-in');
-                }, 300);
-            }, 1650);
-        }
+    setTimeout(function () {
+        trans.classList.remove('show');
+        setTimeout(function () {
+            trans.style.display = 'none';
+            dash.style.display = 'flex';
+            dash.classList.add('screen-in');
+        }, 300);
+    }, 1650);
+
+    // Tambahkan baris ini di sini:
+    muatDataKas();
+}
 
         // ===== Buka-tutup rincian kas =====
         function toggleDetail() {
