@@ -3354,7 +3354,11 @@
     </div>
 
     <!-- Script Javascript -->
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const supabaseUrl = 'https://supabase.com/dashboard/project/cnppivqvrwibbnwazogo/';
+const supabaseKey = 'sb_publishable_fzYTANfnVxLvXbYFR5ZbqQ_QJha0k5W';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         // ===== Transisi Login -> Dashboard =====
         function masukDashboard() {
             var login = document.getElementById('login-screen');
